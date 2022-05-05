@@ -6,7 +6,6 @@ Org management account CLI:
 regions=($(aws ec2 describe-regions --query 'Regions[*].RegionName' --output text))
 或
 regions=( 
-
     "us-east-1" 
     "us-east-2" 
     "us-west-1" 
@@ -27,13 +26,12 @@ regions=(
     "ap-southeast-1" 
     "ap-southeast-2"
     "ap-southeast-3"
-
-"me-south-1"
- "ca-central-1"  
-"sa-east-1" 
-"af-south-1"
+    "me-south-1"
+    "ca-central-1"
+    "sa-east-1"
+    "af-south-1"
+   ) 
    
- ) 
 admin account id(12位数字)
 指定管理员账户
 for region in $regions; do
