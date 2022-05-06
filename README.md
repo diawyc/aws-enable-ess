@@ -3,11 +3,11 @@ CLI command to enable aws ess services within organizations
 ## enable guardduty
 ### Org management account CLI:
 #### 参数设置:
-'''
+>
 regions=($(aws ec2 describe-regions --query 'Regions[*].RegionName' --output text))
-'''
+
 或
-'''
+>
 regions=( 
     "us-east-1" 
     "us-east-2" 
