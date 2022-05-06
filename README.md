@@ -1,12 +1,12 @@
-# enable aws ess with organization CLI
+# Enable aws ess with organization CLI
 CLI command to enable aws ess services within organizations
-## enable guardduty
-### Org management account CLI:
+## Enable guardduty
+### Organization management account CLI command:
 #### 参数设置:
 ```
 regions=($(aws ec2 describe-regions --query 'Regions[*].RegionName' --output text))
 ```
-或
+或者使用下表删除不需要的regions
 ```
 regions=( 
     "us-east-1" 
@@ -33,7 +33,7 @@ regions=(
     "af-south-1"
    ) 
  ```
-admin account id(12位数字)
+将admin account id(12位数字)替换下边命令中的999999999999
 指定管理员账户:
 ```
 for region in $regions; do
@@ -42,15 +42,15 @@ AWS  guardduty enable-organization-admin-account --admin-account-id 999999999999
 echo $region $(aws guardduty list-organization-admin-accounts --region=$region) $(aws guardduty list-detectors --region=$region --output text --query 'DetectorIds' )
 done
 ```
-admin账户CLI:
+admin account执行的CLI Command:
 参数设置:
+Regions需要与上一步management CLI中指定的完全一致
 ```
 regions=($(aws ec2 describe-regions --query 'Regions[*].RegionName' --output text))
 ```
-members.json 第一步中生成
-aggregated region name
+members.json会在下边CLI command中第一步中生成.
 
-执行CLI集合所有成员账号开启Guardduty所有功能:
+执行CLI命令,将所有成员账号member accounts开启Guardduty所有功能:
 ```
 aws organizations list-accounts  --query 'Accounts[*].{AccountId:Id,Email:Email}' --output json --region=$regions[1]> members.json
 for region in $regions; do
