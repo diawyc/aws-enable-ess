@@ -1,6 +1,6 @@
 # Enable aws ess with organization CLI
 CLI command to enable aws ess services within organizations
-## Enable guardduty
+## Enable guardduty,securityhub,inspector,macie
 ### Organization management account CLI command:
 #### 参数设置:
 ```
@@ -34,7 +34,7 @@ regions=(
    ) 
  ```
 将admin account id(12位数字)替换下边命令中的999999999999
-指定管理员账户:
+指定管理员账户 for Guardduty:
 ```
 for region in $regions; do
 aws guardduty create-detector --data-sources   S3Logs={Enable=true},Kubernetes={AuditLogs={Enable=true}} --enable --finding-publishing-frequency FIFTEEN_MINUTES --region=$region
@@ -42,6 +42,31 @@ AWS  guardduty enable-organization-admin-account --admin-account-id 999999999999
 echo $region $(aws guardduty list-organization-admin-accounts --region=$region) $(aws guardduty list-detectors --region=$region --output text --query 'DetectorIds' )
 done
 ```
+指定admin account 管理员账户 for securityhub:
+```
+for region in $regions; do
+AWS  securityhub enable-organization-admin-account --admin-account-id 999999999999 --region=$region 
+aws securityhub enable-security-hub  --enable-default-standards --region=$region
+echo $region $(aws securityhub list-organization-admin-accounts --region=$region --query 'AdminAccounts')
+done
+```
+
+指定admin account 管理员账户 for Inspector:
+```
+for region in $regions; do
+aws inspector2 enable --resource-types EC2 ECR --region=$region
+aws inspector2 enable-delegated-admin-account --delegated-admin-account-id=<12dig number> --region=$region
+echo $region
+done
+```
+指定admin account 管理员账户 for Macie:
+```
+for region in $regions; do
+aws macie2 enable-organization-admin-account --region=$region --admin-account-id <admin account ID>
+echo $region
+done
+```
+---------------------------------------------------------------------------------------------------------------------------------
 admin account执行的CLI Command:
 参数设置:
 Regions需要与上一步management CLI中指定的完全一致
