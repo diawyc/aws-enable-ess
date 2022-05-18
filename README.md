@@ -67,15 +67,14 @@ echo $region
 done
 ```
 ---------------------------------------------------------------------------------------------------------------------------------
-admin account执行的CLI Command:
-参数设置:
+### Delegate admin account CLI command:
+### Guardduty
+#### 参数设置:
 Regions需要与上一步management CLI中指定的完全一致
 ```
 regions=($(aws ec2 describe-regions --query 'Regions[*].RegionName' --output text))
 ```
-members.json会在下边CLI command中第一步中生成.
-
-执行CLI命令,将所有成员账号member accounts开启Guardduty所有功能:
+#### admin account 执行CLI命令,将所有成员账号member accounts开启Guardduty所有功能:
 ```
 aws organizations list-accounts  --query 'Accounts[*].{AccountId:Id,Email:Email}' --output json --region=$regions[1]> members.json
 for region in $regions; do
@@ -83,5 +82,43 @@ AWS  guardduty create-members --detector-id $(aws guardduty list-detectors --out
 AWS  guardduty update-organization-configuration --detector-id $(aws guardduty list-detectors --output text --query 'DetectorIds' --region=$region)   --auto-enable --data-sources S3Logs={AutoEnable=true},Kubernetes={AuditLogs={AutoEnable=true}} --region=$region
 echo $region
 aws guardduty update-detector --detector-id $(aws guardduty list-detectors --output text --query 'DetectorIds' --region=$region) --data-sources   S3Logs={Enable=true},Kubernetes={AuditLogs={Enable=true}} --enable --finding-publishing-frequency FIFTEEN_MINUTES --region=$region
+done
+```
+----------------------------------------------------------------------------------------------------------------------------------------------------------
+### Securityhub
+#### 参数设置:
+```
+```
+#### admin account 执行CLI命令,将所有成员账号member accounts开启所有功能:
+```
+```
+----------------------------------------------------------------------------------------------------------------------------------------------------------
+### Inspector
+#### 参数设置:
+```
+```
+#### admin account 执行CLI命令,将所有成员账号member accounts开启所有功能:
+```
+```
+----------------------------------------------------------------------------------------------------------------------------------------------------------
+### Macie
+#### 参数设置:
+```
+orgids=($(aws organizations list-accounts  --query 'Accounts[*].Id' --output text --region=$regions[1]))
+accountids=( ${orgids[*]/<12位admin account ID>} )
+orgemails=($(aws organizations list-accounts  --query 'Accounts[*].Email' --output text --region=$regions[1]))
+accountemails=(${orgemails[*]/<admin account email>}) 
+len=${#accountids[*]}
+```
+#### admin account 执行CLI命令,将所有成员账号member accounts开启macie所有功能:
+```
+for region in $regions; do
+for ((i=1; i<=len; i++))
+do
+aws macie2 create-member --region=$region --account accountId=$accountids[i],email=$accountemails[i]
+aws macie2 update-organization-configuration --region=$region --auto-enable
+aws macie2  put-findings-publication-configuration --security-hub-configuration publishClassificationFindings=true,publishPolicyFindings=true  --region=$region 
+done
+echo $region
 done
 ```
