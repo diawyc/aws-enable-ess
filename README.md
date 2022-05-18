@@ -68,12 +68,15 @@ done
 ```
 ---------------------------------------------------------------------------------------------------------------------------------
 ### Delegate admin account CLI command:
-### Guardduty
-#### 参数设置:
-Regions需要与上一步management CLI中指定的完全一致
+
+#### 所有服务的参数设置:
+Regions需要与第一步management account CLI中指定的完全一致
 ```
 regions=($(aws ec2 describe-regions --query 'Regions[*].RegionName' --output text))
 ```
+### Guardduty
+#### 特殊参数设置:
+无
 #### admin account 执行CLI命令,将所有成员账号member accounts开启Guardduty所有功能:
 ```
 aws organizations list-accounts  --query 'Accounts[*].{AccountId:Id,Email:Email}' --output json --region=$regions[1]> members.json
@@ -86,32 +89,51 @@ done
 ```
 ----------------------------------------------------------------------------------------------------------------------------------------------------------
 ### Securityhub
-#### 参数设置:
-```
-```
+#### 特殊参数设置:
+<选定的聚合region如:us-west-1>,members.json会自动生成
 #### admin account 执行CLI命令,将所有成员账号member accounts开启所有功能:
 ```
+aws organizations list-accounts  --query 'Accounts[*].{AccountId:Id,Email:Email}' --output json --region=$regions[1]> members.json
+for region in $regions; do
+aws securityhub describe-hub --region=$region
+aws securityhub create-members --account-details file://members.json --region=$region
+aws securityhub update-organization-configuration --auto-enable --region=$region
+echo $region
+done
+aws securityhub create-finding-aggregator --region=cn-north-1  --region-linking-mode=ALL_REGIONS
+aws securityhub  list-finding-aggregators --region=<选定的聚合region如:us-west-1>
 ```
 ----------------------------------------------------------------------------------------------------------------------------------------------------------
 ### Inspector
-#### 参数设置:
-```
-```
+#### 特殊参数设置:
+无
 #### admin account 执行CLI命令,将所有成员账号member accounts开启所有功能:
 ```
+for region in $regions; do
+echo $region
+aws inspector2 enable --resource-types EC2 ECR --region=$region
+aws inspector2 update-organization-configuration --auto-enable ec2=true,ecr=true  --region=$region 
+done
+ids=($(aws organizations list-accounts  --query 'Accounts[*].Id' --output text)) 
+for region in $regions; do
+echo $region
+for id in $ids; do
+aws inspector2 associate-member --account-id=$id --region=$region
+done
+done
 ```
 ----------------------------------------------------------------------------------------------------------------------------------------------------------
 ### Macie
-#### 参数设置:
+#### 特殊参数设置:
+无
+
+#### admin account 执行CLI命令,将所有成员账号member accounts开启macie所有功能:
 ```
 orgids=($(aws organizations list-accounts  --query 'Accounts[*].Id' --output text --region=$regions[1]))
 accountids=( ${orgids[*]/<12位admin account ID>} )
 orgemails=($(aws organizations list-accounts  --query 'Accounts[*].Email' --output text --region=$regions[1]))
 accountemails=(${orgemails[*]/<admin account email>}) 
 len=${#accountids[*]}
-```
-#### admin account 执行CLI命令,将所有成员账号member accounts开启macie所有功能:
-```
 for region in $regions; do
 for ((i=1; i<=len; i++))
 do
