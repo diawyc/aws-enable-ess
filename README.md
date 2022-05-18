@@ -33,19 +33,19 @@ regions=(
     "af-south-1"
    ) 
  ```
-将admin account id(12位数字)替换下边命令中的999999999999
+替换命令中的admin account id(12位数字)
 指定管理员账户 for Guardduty:
 ```
 for region in $regions; do
 aws guardduty create-detector --data-sources   S3Logs={Enable=true},Kubernetes={AuditLogs={Enable=true}} --enable --finding-publishing-frequency FIFTEEN_MINUTES --region=$region
-AWS  guardduty enable-organization-admin-account --admin-account-id 999999999999 --region=$region 
+AWS  guardduty enable-organization-admin-account --admin-account-id <admin account ID> --region=$region 
 echo $region $(aws guardduty list-organization-admin-accounts --region=$region) $(aws guardduty list-detectors --region=$region --output text --query 'DetectorIds' )
 done
 ```
 指定admin account 管理员账户 for securityhub:
 ```
 for region in $regions; do
-AWS  securityhub enable-organization-admin-account --admin-account-id 999999999999 --region=$region 
+AWS  securityhub enable-organization-admin-account --admin-account-id <admin account ID> --region=$region 
 aws securityhub enable-security-hub  --enable-default-standards --region=$region
 echo $region $(aws securityhub list-organization-admin-accounts --region=$region --query 'AdminAccounts')
 done
@@ -55,7 +55,7 @@ done
 ```
 for region in $regions; do
 aws inspector2 enable --resource-types EC2 ECR --region=$region
-aws inspector2 enable-delegated-admin-account --delegated-admin-account-id=<12dig number> --region=$region
+aws inspector2 enable-delegated-admin-account --delegated-admin-account-id=<admin account ID> --region=$region
 echo $region
 done
 ```
@@ -125,12 +125,14 @@ done
 ----------------------------------------------------------------------------------------------------------------------------------------------------------
 ### Macie
 #### 特殊参数设置:
-无
+<admin account email>
+<admin account ID> 12位数字
+将admin account的信息在邀请列表中去除(不去掉也没关系,会报一个错但不影响其它执行)
 
 #### admin account 执行CLI命令,将所有成员账号member accounts开启macie所有功能:
 ```
 orgids=($(aws organizations list-accounts  --query 'Accounts[*].Id' --output text --region=$regions[1]))
-accountids=( ${orgids[*]/<12位admin account ID>} )
+accountids=( ${orgids[*]/<admin account ID>} )
 orgemails=($(aws organizations list-accounts  --query 'Accounts[*].Email' --output text --region=$regions[1]))
 accountemails=(${orgemails[*]/<admin account email>}) 
 len=${#accountids[*]}
