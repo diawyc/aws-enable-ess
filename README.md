@@ -1,6 +1,6 @@
 # Enable aws ess with organization CLI
 CLI command to enable aws ess services within organizations
-## Enable guardduty,securityhub,inspector,macie 使用CLI命令在AWS Organizations下自动开启各项ESS服务
+## Enable guardduty,securityhub,inspector,macie 使用CLI命令在AWS Organizations下自动开启各项ESS服务,共分为两步,Step1 指定delegate admin;Step2 开启所有account 服务
 ### Organization management account CLI command:
 #### 参数设置:
 ```
