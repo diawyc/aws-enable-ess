@@ -33,8 +33,9 @@ regions=(
     "af-south-1"
    ) 
  ```
-
+ ```
 adminid='admin account id(12位数字)'
+ ```
 指定管理员账户 for Guardduty:
 ```
 for region in $regions; do
@@ -78,7 +79,7 @@ done
 ### Delegate admin account CLI command:
 
 #### 所有服务的参数设置:
-Regions需要与第一步management account CLI中指定的完全一致
+regions需要与第一步management account CLI中指定的完全一致
 ```
 regions=($(aws ec2 describe-regions --query 'Regions[*].RegionName' --output text))
 ```
@@ -98,7 +99,9 @@ done
 ----------------------------------------------------------------------------------------------------------------------------------------------------------
 ### Securityhub
 #### 特殊参数设置:
+ ```
 aggregion='<选定的聚合region如:us-west-1>'
+ ```
 members.json会自动生成
 #### admin account 执行CLI命令,将所有成员账号member accounts开启所有功能:
 ```
@@ -134,8 +137,10 @@ done
 ----------------------------------------------------------------------------------------------------------------------------------------------------------
 ### Macie
 #### 特殊参数设置:
+ ```
 admemail='<admin account email>'
 adminid='<admin account ID> 12位数字' (与第一步的要相同)
+ ```
 将admin account的信息在邀请列表中去除(不去掉也没关系,会报一个错但不影响其它执行)
 
 #### admin account 执行CLI命令,将所有成员账号member accounts开启macie所有功能:
@@ -158,8 +163,10 @@ done
 -------------------------------------------------------------------------------------------------------------------------------------------------------
 ### Detective
 #### 特殊参数设置:
+ ```
 admemail='<admin account email>'
 adminid='<admin account ID> 12位数字'
+ ```
 将admin account的信息在邀请列表中去除
 #### admin account 执行CLI命令,将所有成员账号member accounts中的detective开启,并允许未来新member自动开启:
 ```
