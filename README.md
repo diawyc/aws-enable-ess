@@ -33,19 +33,20 @@ regions=(
     "af-south-1"
    ) 
  ```
-替换命令中的admin account id(12位数字)
+
+adminid='admin account id(12位数字)'
 指定管理员账户 for Guardduty:
 ```
 for region in $regions; do
 aws guardduty create-detector --data-sources   S3Logs={Enable=true},Kubernetes={AuditLogs={Enable=true}} --enable --finding-publishing-frequency FIFTEEN_MINUTES --region=$region
-AWS  guardduty enable-organization-admin-account --admin-account-id <admin account ID> --region=$region 
+AWS  guardduty enable-organization-admin-account --admin-account-id=$adminid --region=$region 
 echo $region $(aws guardduty list-organization-admin-accounts --region=$region) $(aws guardduty list-detectors --region=$region --output text --query 'DetectorIds' )
 done
 ```
 指定admin account 管理员账户 for securityhub:
 ```
 for region in $regions; do
-AWS  securityhub enable-organization-admin-account --admin-account-id <admin account ID> --region=$region 
+AWS  securityhub enable-organization-admin-account --admin-account-id=$adminid --region=$region 
 aws securityhub enable-security-hub  --enable-default-standards --region=$region
 echo $region $(aws securityhub list-organization-admin-accounts --region=$region --query 'AdminAccounts')
 done
@@ -55,15 +56,22 @@ done
 ```
 for region in $regions; do
 aws inspector2 enable --resource-types EC2 ECR --region=$region
-aws inspector2 enable-delegated-admin-account --delegated-admin-account-id=<admin account ID> --region=$region
+aws inspector2 enable-delegated-admin-account --delegated-admin-account-id=$adminid --region=$region
 echo $region
 done
 ```
 指定admin account 管理员账户 for Macie:
 ```
 for region in $regions; do
-aws macie2 enable-organization-admin-account --region=$region --admin-account-id <admin account ID>
+aws macie2 enable-organization-admin-account --region=$region --admin-account-id=$adminid
 echo $region
+done
+```
+指定admin account 管理员账户 for Detective:
+```
+for region in $regions; do
+echo $region 
+aws detective  enable-organization-admin-account --account-id $adminid --region=$region
 done
 ```
 ---------------------------------------------------------------------------------------------------------------------------------
@@ -125,8 +133,8 @@ done
 ----------------------------------------------------------------------------------------------------------------------------------------------------------
 ### Macie
 #### 特殊参数设置:
-<admin account email>
-<admin account ID> 12位数字
+admemail='<admin account email>'
+='<admin account ID> 12位数字'
 将admin account的信息在邀请列表中去除(不去掉也没关系,会报一个错但不影响其它执行)
 
 #### admin account 执行CLI命令,将所有成员账号member accounts开启macie所有功能:
@@ -146,3 +154,27 @@ done
 echo $region
 done
 ```
+-------------------------------------------------------------------------------------------------------------------------------------------------------
+### Detective
+#### 特殊参数设置:
+<admin account email>
+<admin account ID> 12位数字
+将admin account的信息在邀请列表中去除
+#### admin account 执行CLI命令,将所有成员账号member accounts中的detective开启,并允许未来新member自动开启:
+```
+ orgids=($(aws organizations list-accounts  --query 'Accounts[*].Id' --output text --region=$regions[1]))
+accountids=( ${orgids[*]/$adminid} )
+orgemails=($(aws organizations list-accounts  --query 'Accounts[*].Email' --output text --region=$regions[1]))
+accountemails=(${orgemails[*]/$admemail}) 
+len=${#accountids[*]}
+for region in $regions; do
+echo $(aws detective create-graph --region=$region --query "GraphArn" --output text)
+echo $region 
+for ((i=1; i<=len; i++))
+do
+aws detective create-members --graph-arn=$(aws detective list-graphs  --region=$region --query "GraphList[0].Arn" --output text) --region=$region --accounts AccountId=$accountids[i],EmailAddress=$accountemails[i]
+done
+aws detective update-organization-configuration --graph-arn=$(aws detective list-graphs  --region=$region --query "GraphList[0].Arn" --output text) --auto-enable  --region=$region
+done   
+```
+    
