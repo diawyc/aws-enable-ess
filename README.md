@@ -107,7 +107,6 @@ members.json会自动生成
 ```
 aws organizations list-accounts  --query 'Accounts[*].{AccountId:Id,Email:Email}' --output json --region=$regions[1]> members.json
 for region in $regions; do
-aws securityhub describe-hub --region=$region
 aws securityhub create-members --account-details file://members.json --region=$region
 aws securityhub update-organization-configuration --auto-enable --region=$region
 echo $region
