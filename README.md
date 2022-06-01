@@ -112,8 +112,7 @@ aws securityhub create-members --account-details file://members.json --region=$r
 aws securityhub update-organization-configuration --auto-enable --region=$region
 echo $region
 done
-aws securityhub create-finding-aggregator --region=cn-north-1  --region-linking-mode=ALL_REGIONS
-aws securityhub  list-finding-aggregators --region=$aggregion
+aws securityhub create-finding-aggregator --region=$aggregion  --region-linking-mode=ALL_REGIONS
 ```
 ----------------------------------------------------------------------------------------------------------------------------------------------------------
 ### Inspector
