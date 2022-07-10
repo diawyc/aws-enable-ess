@@ -1,12 +1,16 @@
 # Enable aws ess with organization CLI
 CLI command to enable aws ess services within organizations
-## Enable guardduty,securityhub,inspector,macie 使用CLI命令在AWS Organizations下自动开启各项ESS服务,共分为两步,Step1 指定delegate admin;Step2 开启所有account 服务
+The detail process is from offical document,you may choose to follow the console setting process,or use this CLI commands
+https://docs.aws.amazon.com/securityhub/latest/userguide/securityhub-accounts.html
+## Enable guardduty,securityhub,inspector,macie 使用CLI命令在AWS Organizations下自动开启各项ESS服务,共分为两步,
+Step1 set one delegate admin(all service must use the same admin account);
+Step2 Enable services in all member accounts and set configuration
 ### Organization management account CLI command:
-#### 参数设置:
+#### 参数设置Set Parameter:
 ```
 regions=($(aws ec2 describe-regions --query 'Regions[*].RegionName' --output text))
 ```
-或者使用下表删除不需要的regions
+或者使用下表删除不需要的regions or you can use below one and delete the regions you do not want from the list
 ```
 regions=( 
     "us-east-1" 
@@ -34,9 +38,10 @@ regions=(
    ) 
  ```
  ```
-adminid='admin account id(12位数字)'
+adminid='admin account id(12位数字digital number)'
  ```
-指定管理员账户 for Guardduty:
+All the services should use one same admin account in your organizations except Macie, this service allows you choose a seperate admin account on condition that your DPO team must be seperate with security.
+指定管理员账户Set a delegated admin account for Guardduty:
 ```
 for region in $regions; do
 aws guardduty create-detector --data-sources   S3Logs={Enable=true},Kubernetes={AuditLogs={Enable=true}} --enable --finding-publishing-frequency FIFTEEN_MINUTES --region=$region
@@ -44,7 +49,7 @@ AWS  guardduty enable-organization-admin-account --admin-account-id=$adminid --r
 echo $region $(aws guardduty list-organization-admin-accounts --region=$region) $(aws guardduty list-detectors --region=$region --output text --query 'DetectorIds' )
 done
 ```
-指定admin account 管理员账户 for securityhub:
+指定admin account 管理员账户Set a delegated admin account for securityhub:
 ```
 for region in $regions; do
 AWS  securityhub enable-organization-admin-account --admin-account-id=$adminid --region=$region 
@@ -53,7 +58,7 @@ echo $region $(aws securityhub list-organization-admin-accounts --region=$region
 done
 ```
 
-指定admin account 管理员账户 for Inspector:
+指定admin account 管理员账户 Set a delegated admin account for Inspector:
 ```
 for region in $regions; do
 aws inspector2 enable --resource-types EC2 ECR --region=$region
@@ -61,14 +66,14 @@ aws inspector2 enable-delegated-admin-account --delegated-admin-account-id=$admi
 echo $region
 done
 ```
-指定admin account 管理员账户 for Macie:
+指定admin account 管理员账户 Set a delegated admin account for Macie:
 ```
 for region in $regions; do
 aws macie2 enable-organization-admin-account --region=$region --admin-account-id=$adminid
 echo $region
 done
 ```
-指定admin account 管理员账户 for Detective:
+指定admin account 管理员账户 Set a delegated admin account for Detective:
 ```
 for region in $regions; do
 echo $region 
@@ -78,15 +83,15 @@ done
 ---------------------------------------------------------------------------------------------------------------------------------
 ### Delegate admin account CLI command:
 
-#### 所有服务的参数设置:
-regions需要与第一步management account CLI中指定的完全一致
+#### 所有服务的参数设置 Set parameter for all services:
+regions需要与第一步management account CLI中指定的完全一致 must be the same as the list in step1
 ```
 regions=($(aws ec2 describe-regions --query 'Regions[*].RegionName' --output text))
 ```
 ### Guardduty
-#### 特殊参数设置:
+#### 特殊参数设置Set special paramter for certain service:
 无
-#### admin account 执行CLI命令,将所有成员账号member accounts开启Guardduty所有功能:
+#### admin account run below command to enable the service in all accounts执行CLI命令,将所有成员账号member accounts开启Guardduty所有功能:
 ```
 aws organizations list-accounts  --query 'Accounts[*].{AccountId:Id,Email:Email}' --output json --region=$regions[1]> members.json
 for region in $regions; do
@@ -98,12 +103,12 @@ done
 ```
 ----------------------------------------------------------------------------------------------------------------------------------------------------------
 ### Securityhub
-#### 特殊参数设置:
+#### Set special paramter for certain service特殊参数设置:
  ```
-aggregion='<选定的聚合region如:us-west-1>'
+aggregion='<选定的聚合aggregated region如:us-west-1>'
  ```
 members.json会自动生成
-#### admin account 执行CLI命令,将所有成员账号member accounts开启所有功能:
+#### admin account run below command to enable the service in all account 执行CLI命令,将所有成员账号member accounts开启所有功能:
 ```
 aws organizations list-accounts  --query 'Accounts[*].{AccountId:Id,Email:Email}' --output json --region=$regions[1]> members.json
 for region in $regions; do
@@ -116,7 +121,7 @@ aws securityhub create-finding-aggregator --region=$aggregion  --region-linking-
 ```
 ----------------------------------------------------------------------------------------------------------------------------------------------------------
 ### Inspector
-#### 特殊参数设置:
+#### 特殊参数设置Set special parameter for this service:
 无
 #### admin account 执行CLI命令,将所有成员账号member accounts开启所有功能:
 ```
@@ -135,14 +140,14 @@ done
 ```
 ----------------------------------------------------------------------------------------------------------------------------------------------------------
 ### Macie
-#### 特殊参数设置:
+#### 特殊参数设置Set special parameter for this service:
  ```
 admemail='<admin account email>'
 adminid='<admin account ID> 12位数字' (与第一步的要相同)
  ```
 将admin account的信息在邀请列表中去除(不去掉也没关系,会报一个错但不影响其它执行)
 
-#### admin account 执行CLI命令,将所有成员账号member accounts开启macie所有功能:
+#### admin accountadmin account run below command to enable the service in all account 执行CLI命令,将所有成员账号member accounts开启macie所有功能:
 ```
 orgids=($(aws organizations list-accounts  --query 'Accounts[*].Id' --output text --region=$regions[1]))
 accountids=( ${orgids[*]/$adminid} )
@@ -161,13 +166,13 @@ done
 ```
 -------------------------------------------------------------------------------------------------------------------------------------------------------
 ### Detective
-#### 特殊参数设置:
+#### 特殊参数设置Set special parameter for this service:
  ```
 admemail='<admin account email>'
 adminid='<admin account ID> 12位数字'
  ```
-将admin account的信息在邀请列表中去除
-#### admin account 执行CLI命令,将所有成员账号member accounts中的detective开启,并允许未来新member自动开启:
+将admin account的信息在邀请列表中去除 remove the admin account in the accountids
+#### admin account admin account run below command to enable the service in all account执行CLI命令,将所有成员账号member accounts中的detective开启,并允许未来新member自动开启:
 ```
 orgids=($(aws organizations list-accounts  --query 'Accounts[*].Id' --output text --region=$regions[1]))
 accountids=( ${orgids[*]/$adminid} )
