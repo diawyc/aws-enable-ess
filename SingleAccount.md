@@ -36,6 +36,7 @@ for region in $regions; do
 aws guardduty create-detector --data-sources   S3Logs={Enable=true},Kubernetes={AuditLogs={Enable=true}} --enable --finding-publishing-frequency FIFTEEN_MINUTES --region=$region
 echo $region 
 done
+```
 ## 开启服务 Inspector
 ```
 for region in $regions; do
