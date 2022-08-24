@@ -37,6 +37,7 @@ aws guardduty create-detector --data-sources   S3Logs={Enable=true},Kubernetes={
 echo $region 
 done
 ```
+CLI output:
 ![screen](guardduty.png)
 ## 开启服务 Inspector
 ```
@@ -44,6 +45,6 @@ for region in $regions; do
 echo $region
 aws inspector2 enable --resource-types EC2 ECR --region=$region
 done
-
 ```
+CLI output
 ![screen](inspector.png)
