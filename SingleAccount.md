@@ -30,9 +30,17 @@ regions=(
     "af-south-1"
    ) 
  ```
- ## 开启服务
+ ## 开启服务 Guardduty
  ```
 for region in $regions; do
 aws guardduty create-detector --data-sources   S3Logs={Enable=true},Kubernetes={AuditLogs={Enable=true}} --enable --finding-publishing-frequency FIFTEEN_MINUTES --region=$region
 echo $region 
 done
+## 开启服务 Inspector
+```
+for region in $regions; do
+echo $region
+aws inspector2 enable --resource-types EC2 ECR --region=$region
+done
+
+```
