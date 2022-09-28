@@ -48,32 +48,35 @@ for region in $regions; do
 echo $region
 aws guardduty create-detector --data-sources   S3Logs={Enable=true},Kubernetes={AuditLogs={Enable=true}} --enable --finding-publishing-frequency FIFTEEN_MINUTES --region=$region
 AWS  guardduty enable-organization-admin-account --admin-account-id=$adminid --region=$region 
- $(aws guardduty list-organization-admin-accounts --region=$region) $(aws guardduty list-detectors --region=$region --output text --query 'DetectorIds' )
+echo $(aws guardduty list-organization-admin-accounts --region=$region) $(aws guardduty list-detectors --region=$region --output text --query 'DetectorIds' )
 done
 ```
 ## securityhub
 指定admin account 管理员账户Set a delegated admin account for securityhub:
 ```
 for region in $regions; do
-AWS  securityhub enable-organization-admin-account --admin-account-id=$adminid --region=$region 
+echo $region
+AWS securityhub enable-organization-admin-account --admin-account-id=$adminid --region=$region 
 aws securityhub enable-security-hub  --enable-default-standards --region=$region
-echo $region $(aws securityhub list-organization-admin-accounts --region=$region --query 'AdminAccounts')
+echo $(aws securityhub list-organization-admin-accounts --region=$region --query 'AdminAccounts')
 done
 ```
 ## Inspector
 指定admin account 管理员账户 Set a delegated admin account for Inspector:
 ```
 for region in $regions; do
+echo $region
 aws inspector2 enable --resource-types EC2 ECR --region=$region
 aws inspector2 enable-delegated-admin-account --delegated-admin-account-id=$adminid --region=$region
-echo $region
+echo $(aws inspector list-organization-admin-accounts --region=$region --query 'AdminAccounts')
 done
 ```
 指定admin account 管理员账户 Set a delegated admin account for Macie:
 ```
 for region in $regions; do
-aws macie2 enable-organization-admin-account --region=$region --admin-account-id=$adminid
 echo $region
+aws macie2 enable-organization-admin-account --region=$region --admin-account-id=$adminid
+echo $(aws macie list-organization-admin-accounts --region=$region --query 'AdminAccounts')
 done
 ```
 指定admin account 管理员账户 Set a delegated admin account for Detective:
@@ -81,6 +84,7 @@ done
 for region in $regions; do
 echo $region 
 aws detective  enable-organization-admin-account --account-id $adminid --region=$region
+echo $(aws detective list-organization-admin-accounts --region=$region --query 'AdminAccounts')
 done
 ```
 ---------------------------------------------------------------------------------------------------------------------------------
