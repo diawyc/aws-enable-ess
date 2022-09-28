@@ -52,7 +52,7 @@ echo $(aws guardduty list-organization-admin-accounts --region=$region) $(aws gu
 done
 ```
 ## securityhub
-注意：
+注意：打开之后24小时内一定要在Org内打开config。使用方法为直接通过cloudformation stacksets-sample template中选取
 ## securityhub
 指定admin account 管理员账户Set a delegated admin account for securityhub:
 ```
