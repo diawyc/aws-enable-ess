@@ -113,9 +113,11 @@ done
 #### Set special paramter for certain service特殊参数设置:
  ```
 aggregion='<选定的聚合aggregated region如:us-west-1>'
+adminid=$(aws sts get-caller-identity --output text --query 'Account' )
  ```
 members.json会自动生成
 #### admin account run below command to enable the service in all account 执行CLI命令,将所有成员账号member accounts开启所有功能:
+Type1 这种会报错（管理员账号不能加入自己）但不影响结果
 ```
 aws organizations list-accounts  --query 'Accounts[*].{AccountId:Id,Email:Email}' --output json --region=$regions[1]> members.json
 for region in $regions; do
@@ -127,6 +129,7 @@ aws securityhub update-organization-configuration --auto-enable --region=$region
 done
 aws securityhub create-finding-aggregator --region=$aggregion  --region-linking-mode=ALL_REGIONS
 ```
+Type 2 这种不会有报错
 ```
 orgids=($(aws organizations list-accounts  --query 'Accounts[*].Id' --output text --region=$regions[1]))
 accountids=( ${orgids[*]/$adminid} 
