@@ -162,13 +162,14 @@ orgemails=($(aws organizations list-accounts  --query 'Accounts[*].Email' --outp
 accountemails=(${orgemails[*]/$admemail}) 
 len=${#accountids[*]}
 for region in $regions; do
+echo $region
 for ((i=1; i<=len; i++))
 do
 aws macie2 create-member --region=$region --account accountId=$accountids[i],email=$accountemails[i]
 aws macie2 update-organization-configuration --region=$region --auto-enable
 aws macie2  put-findings-publication-configuration --security-hub-configuration publishClassificationFindings=true,publishPolicyFindings=true  --region=$region 
 done
-echo $region
+
 done
 ```
 -------------------------------------------------------------------------------------------------------------------------------------------------------
