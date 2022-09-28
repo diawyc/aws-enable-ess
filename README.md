@@ -132,13 +132,13 @@ aws securityhub create-finding-aggregator --region=$aggregion  --region-linking-
 Type 2 这种不会有报错
 ```
 orgids=($(aws organizations list-accounts  --query 'Accounts[*].Id' --output text --region=$regions[1]))
-accountids=( ${orgids[*]/$adminid} 
+accountids=( ${orgids[*]/$adminid} )
 len=${#accountids[*]}
 for region in $regions; do
 echo $region
-for ((i=1; i<=len; i++))
-do
-aws securityhub create-members --account-details AccountId=accountids[i] --region=$region
+for ((i=1; i<=len; i++));do
+echo $accountids[i]
+aws securityhub create-members --account-details AccountId=$accountids[i] --region=$region
 aws securityhub enable-security-hub  --enable-default-standards --region=$region
 aws securityhub update-organization-configuration --auto-enable --region=$region
 done
