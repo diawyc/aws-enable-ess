@@ -52,6 +52,8 @@ echo $(aws guardduty list-organization-admin-accounts --region=$region) $(aws gu
 done
 ```
 ## securityhub
+注意：
+## securityhub
 指定admin account 管理员账户Set a delegated admin account for securityhub:
 ```
 for region in $regions; do
