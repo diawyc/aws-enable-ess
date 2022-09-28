@@ -41,6 +41,7 @@ regions=(
 adminid='admin account id(12位数字digital number)'
  ```
 All the services should use one same admin account in your organizations except Macie, this service allows you choose a seperate admin account on condition that your DPO team must be seperate with security.
+## Guardduty
 指定管理员账户Set a delegated admin account for Guardduty:
 ```
 for region in $regions; do
@@ -49,6 +50,7 @@ AWS  guardduty enable-organization-admin-account --admin-account-id=$adminid --r
 echo $region $(aws guardduty list-organization-admin-accounts --region=$region) $(aws guardduty list-detectors --region=$region --output text --query 'DetectorIds' )
 done
 ```
+## securityhub
 指定admin account 管理员账户Set a delegated admin account for securityhub:
 ```
 for region in $regions; do
@@ -57,7 +59,7 @@ aws securityhub enable-security-hub  --enable-default-standards --region=$region
 echo $region $(aws securityhub list-organization-admin-accounts --region=$region --query 'AdminAccounts')
 done
 ```
-
+## Inspector
 指定admin account 管理员账户 Set a delegated admin account for Inspector:
 ```
 for region in $regions; do
