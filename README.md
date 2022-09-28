@@ -119,12 +119,27 @@ members.json会自动生成
 ```
 aws organizations list-accounts  --query 'Accounts[*].{AccountId:Id,Email:Email}' --output json --region=$regions[1]> members.json
 for region in $regions; do
+echo $region
 aws securityhub create-members --account-details file://members.json --region=$region
 aws securityhub enable-security-hub  --enable-default-standards --region=$region
 aws securityhub update-organization-configuration --auto-enable --region=$region
-echo $region
+
 done
 aws securityhub create-finding-aggregator --region=$aggregion  --region-linking-mode=ALL_REGIONS
+```
+```
+orgids=($(aws organizations list-accounts  --query 'Accounts[*].Id' --output text --region=$regions[1]))
+accountids=( ${orgids[*]/$adminid} 
+len=${#accountids[*]}
+for region in $regions; do
+echo $region
+for ((i=1; i<=len; i++))
+do
+aws securityhub create-members --account-details AccountId=accountids[i] --region=$region
+aws securityhub enable-security-hub  --enable-default-standards --region=$region
+aws securityhub update-organization-configuration --auto-enable --region=$region
+done
+done
 ```
 ----------------------------------------------------------------------------------------------------------------------------------------------------------
 ### Inspector
