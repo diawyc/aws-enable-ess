@@ -8,7 +8,7 @@ Step2 Enable services in all member accounts and set configuration
 ### Organization management account CLI command:
 #### 参数设置Set Parameter:
 ```
-regions=($(aws ec2 describe-regions --query 'Regions[*].RegionName' --output text))
+regions=($(aws ec2 describe-regions --query 'Regions[*].RegionName' --output text --region=us-east-1))
 ```
 或者使用下表删除不需要的regions or you can use below one and delete the regions you do not want from the list
 ```
@@ -45,9 +45,10 @@ All the services should use one same admin account in your organizations except 
 指定管理员账户Set a delegated admin account for Guardduty:
 ```
 for region in $regions; do
+echo $region
 aws guardduty create-detector --data-sources   S3Logs={Enable=true},Kubernetes={AuditLogs={Enable=true}} --enable --finding-publishing-frequency FIFTEEN_MINUTES --region=$region
 AWS  guardduty enable-organization-admin-account --admin-account-id=$adminid --region=$region 
-echo $region $(aws guardduty list-organization-admin-accounts --region=$region) $(aws guardduty list-detectors --region=$region --output text --query 'DetectorIds' )
+ $(aws guardduty list-organization-admin-accounts --region=$region) $(aws guardduty list-detectors --region=$region --output text --query 'DetectorIds' )
 done
 ```
 ## securityhub
