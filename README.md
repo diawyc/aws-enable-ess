@@ -143,6 +143,7 @@ aws securityhub enable-security-hub  --enable-default-standards --region=$region
 aws securityhub update-organization-configuration --auto-enable --region=$region
 done
 done
+aws securityhub create-finding-aggregator --region=$aggregion  --region-linking-mode=ALL_REGIONS
 ```
 ----------------------------------------------------------------------------------------------------------------------------------------------------------
 ### Inspector
