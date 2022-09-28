@@ -93,7 +93,7 @@ done
 #### 所有服务的参数设置 Set parameter for all services:
 regions需要与第一步management account CLI中指定的完全一致 must be the same as the list in step1
 ```
-regions=($(aws ec2 describe-regions --query 'Regions[*].RegionName' --output text))
+regions=($(aws ec2 describe-regions --query 'Regions[*].RegionName' --output text --region=us-east-1))
 ```
 ### Guardduty
 #### 特殊参数设置Set special paramter for certain service:
