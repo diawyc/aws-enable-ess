@@ -101,6 +101,7 @@ regions=($(aws ec2 describe-regions --query 'Regions[*].RegionName' --output tex
 #### 特殊参数设置Set special paramter for certain service:
 无
 #### admin account run below command to enable the service in all accounts执行CLI命令,将所有成员账号member accounts开启Guardduty所有功能:
+Type1 这种会报错（管理员账号不能加入自己）但不影响结果
 ```
 aws organizations list-accounts  --query 'Accounts[*].{AccountId:Id,Email:Email}' --output json --region=$regions[1]> members.json
 for region in $regions; do
@@ -110,6 +111,27 @@ echo $region
 aws guardduty update-detector --detector-id $(aws guardduty list-detectors --output text --query 'DetectorIds' --region=$region) --data-sources   S3Logs={Enable=true},Kubernetes={AuditLogs={Enable=true}} --enable --finding-publishing-frequency FIFTEEN_MINUTES --region=$region
 done
 ```
+Type 2 这种不会有报错
+```
+orgids=($(aws organizations list-accounts  --query 'Accounts[*].Id' --output text ))
+accountids=( ${orgids[*]/$adminid} )
+orgemails=($(aws organizations list-accounts  --query 'Accounts[*].Email' --output text ))
+accountemails=(${orgemails[*]/$admemail})
+len=${#accountids[*]}
+echo $len
+```
+```
+for region in $regions; do
+echo $region
+for ((i=1; i<=len; i++));do
+echo $accountids[i] $accountemails[i]
+aws guardduty create-members --detector-id $(aws guardduty list-detectors --output text --query 'DetectorIds' --region=$region)  --account-details AccountId=$accountids[i],Email=$accountemails[i]  --region=$region
+aws guardduty update-detector --detector-id $(aws guardduty list-detectors --output text --query 'DetectorIds' --region=$region) --data-sources   S3Logs={Enable=true} --enable --finding-publishing-frequency FIFTEEN_MINUTES --region=$region
+aws guardduty update-organization-configuration --detector-id $(aws guardduty list-detectors --output text --query 'DetectorIds' --region=$region)   --auto-enable --data-sources S3Logs={AutoEnable=true} --region=$region
+done
+done
+```
+
 ----------------------------------------------------------------------------------------------------------------------------------------------------------
 ### Securityhub
 #### Set special paramter for certain service特殊参数设置:
