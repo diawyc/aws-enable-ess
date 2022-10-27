@@ -73,6 +73,7 @@ aws inspector2 enable-delegated-admin-account --delegated-admin-account-id=$admi
 echo $(aws inspector list-organization-admin-accounts --region=$region --query 'AdminAccounts')
 done
 ```
+## Macie
 指定admin account 管理员账户 Set a delegated admin account for Macie:
 ```
 for region in $regions; do
@@ -81,6 +82,7 @@ aws macie2 enable-organization-admin-account --region=$region --admin-account-id
 echo $(aws macie list-organization-admin-accounts --region=$region --query 'AdminAccounts')
 done
 ```
+## Detective
 指定admin account 管理员账户 Set a delegated admin account for Detective:
 ```
 for region in $regions; do
